@@ -1,43 +1,44 @@
-const CopyWebpackPlugin = require('copy-webpack-plugin');
-const FilemanagerPlugin = require('filemanager-webpack-plugin');
-const HtmlWebpackPlugin = require('html-webpack-plugin');
-const path = require('path');
-const TerserPlugin = require('terser-webpack-plugin');
-const webpack = require('webpack');
-const { CleanWebpackPlugin } = require('clean-webpack-plugin');
-const ExtensionReloader = require('webpack-extension-reloader');
-const MiniCssExtractPlugin = require('mini-css-extract-plugin');
-const WextManifestWebpackPlugin = require('wext-manifest-webpack-plugin');
-const ForkTsCheckerWebpackPlugin = require('fork-ts-checker-webpack-plugin');
-const CssMinimizerPlugin = require('css-minimizer-webpack-plugin');
+const CopyWebpackPlugin = require("copy-webpack-plugin");
+const FilemanagerPlugin = require("filemanager-webpack-plugin");
+const HtmlWebpackPlugin = require("html-webpack-plugin");
+const path = require("path");
+const TerserPlugin = require("terser-webpack-plugin");
+const webpack = require("webpack");
+const { CleanWebpackPlugin } = require("clean-webpack-plugin");
+const ExtensionReloader = require("webpack-extension-reloader");
+const MiniCssExtractPlugin = require("mini-css-extract-plugin");
+const WextManifestWebpackPlugin = require("wext-manifest-webpack-plugin");
+const ForkTsCheckerWebpackPlugin = require("fork-ts-checker-webpack-plugin");
+const CssMinimizerPlugin = require("css-minimizer-webpack-plugin");
 
-const viewsPath = path.join(__dirname, 'views');
-const sourcePath = path.join(__dirname, 'source');
-const destPath = path.join(__dirname, 'extension');
-const nodeEnv = process.env.NODE_ENV || 'development';
+const viewsPath = path.join(__dirname, "views");
+const sourcePath = path.join(__dirname, "source");
+const destPath = path.join(__dirname, "extension");
+const nodeEnv = process.env.NODE_ENV || "development";
 const targetBrowser = process.env.TARGET_BROWSER;
 
 const extensionReloaderPlugin =
-  nodeEnv === 'development'
+  nodeEnv === "development"
     ? new ExtensionReloader({
-        port: 9090,
-        reloadPage: true,
-        entries: {
-          // TODO: reload manifest on update
-          extensionPage: ['popup', 'options'],
-          background: 'background',
-        },
-      })
+      port: 9090,
+      reloadPage: true,
+      entries: {
+        // TODO: reload manifest on update
+        extensionPage: ["popup", "options", "devtools"],
+        background: "background",
+      },
+    })
     : () => {
-        this.apply = () => {};
+      this.apply = () => {
       };
+    };
 
 const getExtensionFileType = (browser) => {
-  if (browser === 'firefox') {
-    return 'xpi';
+  if (browser === "firefox") {
+    return "xpi";
   }
 
-  return 'zip';
+  return "zip";
 };
 
 module.exports = {
@@ -53,28 +54,30 @@ module.exports = {
   mode: nodeEnv,
 
   entry: {
-    manifest: path.join(sourcePath, 'manifest.json'),
-    serviceworker: path.join(sourcePath, 'Background', 'service-worker.ts'),
-    popup: path.join(sourcePath, 'Popup', 'index.tsx'),
-    options: path.join(sourcePath, 'Options', 'index.tsx'),
+    manifest: path.join(sourcePath, "manifest.json"),
+    serviceworker: path.join(sourcePath, "Background", "service-worker.ts"),
+    popup: path.join(sourcePath, "Popup", "index.tsx"),
+    options: path.join(sourcePath, "Options", "index.tsx"),
+    devtools: path.join(sourcePath, "Devtools", "index.tsx"),
+    panel: path.join(sourcePath, "Devtools", "panel.tsx"),
   },
 
   output: {
     path: path.join(destPath, targetBrowser),
-    filename: 'js/[name].bundle.js',
+    filename: "js/[name].bundle.js",
   },
 
   resolve: {
-    extensions: ['.ts', '.tsx', '.js', '.json'],
+    extensions: [".ts", ".tsx", ".js", ".json"],
   },
 
   module: {
     rules: [
       {
-        type: 'javascript/auto', // prevent webpack handling json with its own loaders,
+        type: "javascript/auto", // prevent webpack handling json with its own loaders,
         test: /manifest\.json$/,
         use: {
-          loader: 'wext-manifest-loader',
+          loader: "wext-manifest-loader",
           options: {
             usePackageJSONVersion: true, // set to false to not use package.json version for manifest
           },
@@ -83,7 +86,7 @@ module.exports = {
       },
       {
         test: /\.(js|ts)x?$/,
-        loader: 'babel-loader',
+        loader: "babel-loader",
         exclude: /node_modules/,
       },
       {
@@ -92,12 +95,12 @@ module.exports = {
           {
             loader: MiniCssExtractPlugin.loader,
           },
-          'css-loader',
+          "css-loader",
           {
-            loader: 'postcss-loader',
+            loader: "postcss-loader",
             options: {
               postcssOptions: {
-                config: path.resolve(__dirname, 'postcss.config.js'),
+                config: path.resolve(__dirname, "postcss.config.js"),
               },
             },
           },
@@ -113,37 +116,49 @@ module.exports = {
     new webpack.SourceMapDevToolPlugin({ filename: false }),
     new ForkTsCheckerWebpackPlugin(),
     // environmental variables
-    new webpack.EnvironmentPlugin(['NODE_ENV', 'TARGET_BROWSER']),
+    new webpack.EnvironmentPlugin(["NODE_ENV", "TARGET_BROWSER"]),
     // delete previous build files
     new CleanWebpackPlugin({
       cleanOnceBeforeBuildPatterns: [
         path.join(process.cwd(), `extension/${targetBrowser}`),
         path.join(
           process.cwd(),
-          `extension/${targetBrowser}.${getExtensionFileType(targetBrowser)}`
+          `extension/${targetBrowser}.${getExtensionFileType(targetBrowser)}`,
         ),
       ],
       cleanStaleWebpackAssets: false,
       verbose: true,
     }),
     // write css file(s) to build folder
-    new MiniCssExtractPlugin({ filename: 'css/[name].css' }),
+    new MiniCssExtractPlugin({ filename: "css/[name].css" }),
     new HtmlWebpackPlugin({
-      template: path.join(viewsPath, 'popup.html'),
-      chunks: ['popup'],
+      template: path.join(viewsPath, "popup.html"),
+      chunks: ["popup"],
       hash: true,
-      filename: 'popup.html',
+      filename: "popup.html",
     }),
     new HtmlWebpackPlugin({
-      template: path.join(viewsPath, 'options.html'),
-      chunks: ['options'],
+      template: path.join(viewsPath, "options.html"),
+      chunks: ["options"],
       hash: true,
-      filename: 'options.html',
+      filename: "options.html",
+    }),
+    new HtmlWebpackPlugin({
+      template: path.join(viewsPath, "devtools.html"),
+      chunks: ["devtools"],
+      hash: true,
+      filename: "devtools.html",
+    }),
+    new HtmlWebpackPlugin({
+      template: path.join(viewsPath, "panel.html"),
+      chunks: ["panel"],
+      hash: true,
+      filename: "panel.html",
     }),
     new CssMinimizerPlugin(),
     // copy static assets
     new CopyWebpackPlugin({
-      patterns: [{ from: 'source/assets', to: 'assets' }],
+      patterns: [{ from: "source/assets", to: "assets" }],
     }),
     // plugin to enable browser reloading in development mode
     extensionReloaderPlugin,
@@ -166,10 +181,10 @@ module.exports = {
           onEnd: {
             archive: [
               {
-                format: 'zip',
+                format: "zip",
                 source: path.join(destPath, targetBrowser),
                 destination: `${path.join(destPath, targetBrowser)}.${getExtensionFileType(
-                  targetBrowser
+                  targetBrowser,
                 )}`,
                 options: { zlib: { level: 6 } },
               },
