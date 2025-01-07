@@ -141,8 +141,4 @@ See the original [README](https://github.com/abhijithvijayan/wext-manifest-loade
 
 ## License
 
-[MIT ©](https://github.com/comehere127/ghn-sync-cookie/blob/main/LICENCE)
-
-## Inspiration
-
-Inspired by [Sentry Cookie Sync](https://github.com/getsentry/cookie-sync)
+[MIT ©](https://github.com/comehere127/ghn-sync-cookie/blob/master/LICENCE)
