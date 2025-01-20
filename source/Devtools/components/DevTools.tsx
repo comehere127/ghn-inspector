@@ -3,6 +3,7 @@ import React, { useEffect, useState } from "react";
 import browser from "webextension-polyfill";
 
 import { useLocalStorageContext } from "../context/localStorage.context";
+import { useApplicationDevStatusData } from "../hooks/useApplicationDevStatusData";
 import { ApplicationList } from "./ApplicationList";
 
 /**
@@ -14,7 +15,8 @@ import { ApplicationList } from "./ApplicationList";
  * @return {JSX.Element} DevTools component
  */
 export function DevTools() {
-  const { setActiveTab, localStorageData } = useLocalStorageContext();
+  const { setActiveTab } = useLocalStorageContext();
+  const { data } = useApplicationDevStatusData();
   const [currentPath, setCurrentPath] = useState("");
 
   useEffect(() => {
@@ -30,14 +32,14 @@ export function DevTools() {
     }
 
     getCurrentTab();
-  }, []);
+  }, [setActiveTab]);
 
-  if (!currentPath) {
+  if (!currentPath || !data) {
     return <h1>This extension only worked in development environment</h1>;
   }
 
   return <React.Fragment>
     <h1>GHN Inspector</h1>
-    <ApplicationList localStorageData={localStorageData} />
+    <ApplicationList />
   </React.Fragment>;
 }

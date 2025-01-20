@@ -1,15 +1,25 @@
 import React from "react";
 
-interface ApplicationListProps {
-  localStorageData: Record<string, unknown>;
-}
+import { useApplicationListData } from "../hooks/useApplicationListData";
 
-export function ApplicationList({ localStorageData }: ApplicationListProps) {
+/**
+ * ApplicationList component
+ * @param localStorageData
+ * @constructor
+ * Show the list of applications
+ * @return {JSX.Element} ApplicationList component
+ */
+export function ApplicationList() {
+  const { data } = useApplicationListData();
+
+  if (!data) {
+    return <h2>No data</h2>;
+  }
+
   return (
     <div>
-      <h1>Application List</h1>
       <ul>
-        {Object.entries(localStorageData).map(([key, value]) => (
+        {Object.entries(data).map(([key, value]) => (
           <li key={key}>
             <strong>{key}:</strong> {value}
           </li>
