@@ -15,12 +15,16 @@
   "__chrome|edge|opera__permissions": [
     "cookies",
     "storage",
-    "tabs"
+    "tabs",
+    "activeTab",
+    "scripting"
   ],
   "__firefox__permissions": [
     "cookies",
     "storage",
     "tabs",
+    "activeTab",
+    "scripting",
     "https://*.ghn.tech/*",
     "http://localhost/*"
   ],
