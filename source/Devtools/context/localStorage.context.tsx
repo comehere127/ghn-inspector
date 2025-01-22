@@ -8,6 +8,9 @@ interface LocalStorageContextProps {
 
   activeTab: browser.Tabs.Tab | undefined;
   setActiveTab: React.Dispatch<React.SetStateAction<browser.Tabs.Tab | undefined>>;
+
+  saveToLocalStorage: (key: string, value: unknown) => void;
+  extractLocalStorageData: () => void;
 }
 
 const LocalStorageContext = createContext<LocalStorageContextProps | undefined>(undefined);
@@ -16,42 +19,54 @@ export const LocalStorageProvider: React.FC<{ children: ReactNode }> = ({ childr
   const [activeTab, setActiveTab] = useState<browser.Tabs.Tab | undefined>();
   const [localStorageData, setLocalStorageData] = useState<Record<string, unknown>>({});
 
-  useEffect(() => {
-    async function extractLocalStorageData() {
-      if (!activeTab || !activeTab.id) return;
+  async function extractLocalStorageData() {
+    if (!activeTab || !activeTab.id) return;
 
-      console.log("Extracting local storage data");
+    const result = await browser.scripting.executeScript({
+      target: { tabId: activeTab.id! },
+      func: () => {
+        const keys = Object.keys(localStorage);
+        const data: Record<string, string> = {};
+        keys.forEach((key) => {
+          data[key] = localStorage.getItem(key) || "";
+        });
 
-      const result = await browser.scripting.executeScript({
-        target: { tabId: activeTab.id! },
-        func: () => {
-          const keys = Object.keys(localStorage);
-          console.log({ keys });
-          const data: Record<string, string> = {};
-          keys.forEach((key) => {
-            data[key] = localStorage.getItem(key) || "";
-          });
+        return [data];
+      },
+    });
 
-          return [data];
-        },
-      });
-
-      console.log({ result });
-
-      if (result[0] && result[0].result?.length > 0) {
-        setLocalStorageData(result[0].result[0] as Record<string, unknown>);
-      }
+    if (result[0] && result[0].result?.length > 0) {
+      setLocalStorageData(result[0].result[0] as Record<string, unknown>);
     }
+  }
 
+  useEffect(() => {
     extractLocalStorageData();
   }, [activeTab]);
 
-  useEffect(() => {
-    console.log({ localStorageData });
-  }, [localStorageData]);
+
+  const saveToLocalStorage = async (key: string, value: unknown) => {
+    if (!activeTab || !activeTab.id) return;
+
+    await browser.scripting.executeScript({
+      target: { tabId: activeTab.id! },
+      func: (key, value) => {
+        localStorage.setItem(key, JSON.stringify(value));
+      },
+      args: [key, value],
+    });
+  };
 
   return (
-    <LocalStorageContext.Provider value={{ localStorageData, setLocalStorageData, activeTab, setActiveTab }}>
+    <LocalStorageContext.Provider
+      value={{
+        extractLocalStorageData,
+        localStorageData,
+        setLocalStorageData,
+        activeTab,
+        setActiveTab,
+        saveToLocalStorage,
+      }}>
       {children}
     </LocalStorageContext.Provider>
   );

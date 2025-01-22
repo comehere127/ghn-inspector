@@ -86,10 +86,9 @@ i {
 }
 
 
-.copy-button {
+.btn {
     border-radius: 4px;
     display: inline-block;
-    border-radius: 4px;
     text-transform: none;
     color: var(--sync-white);
     background-color: var(--sync-primary);
@@ -102,7 +101,11 @@ i {
     transition: box-shadow 0.3s ease;
 }
 
-.copy-button:hover:not(:disabled) {
+.mb-4 {
+    margin-bottom: 1rem;
+}
+
+.btn:hover:not(:disabled) {
     box-shadow: 0 0 4px 4px rgba(255, 82, 0, 0.5);
 }
 
@@ -112,10 +115,10 @@ i {
     flex-direction: column;
 }
 
-.button-group {
+.devtools-btn-group {
     display: flex;
-    align-items: center;
-    justify-content: center;
+    align-items: flex-start;
+    justify-content: flex-start;
     gap: 8px;
 }
 
@@ -175,15 +178,15 @@ i {
     margin-left: auto;
 }
 
-.found-cookies td:last-child {
+.app-list td:last-child {
     word-break: break-all;
 }
 
-.found-cookies td, .found-cookies th {
+.app-list td, .app-list th {
     padding: 0.5rem;
 }
 
-table.found-cookies {
+table.app-list {
     border-radius: 4px;
     border: 1px solid var(--sync-gray200);
     /* border-collapse: collapse; */
@@ -194,28 +197,36 @@ table.found-cookies {
 }
 
 
-table.found-cookies th:not(:last-child),
-table.found-cookies td:not(:last-child) {
+table.app-list th:not(:last-child),
+table.app-list td:not(:last-child) {
     border-right: 1px solid var(--sync-gray200);
 }
 
-table.found-cookies > tbody > tr:not(:last-child) > th,
-table.found-cookies > tbody > tr:not(:last-child) > td,
-table.found-cookies > tr:not(:last-child) > td,
-table.found-cookies > tr:not(:last-child) > th,
-table.found-cookies > tbody:not(:last-child) {
+table.app-list > tbody > tr:not(:last-child) > th,
+table.app-list > tbody > tr:not(:last-child) > td,
+table.app-list > tr:not(:last-child) > td,
+table.app-list > tr:not(:last-child) > th,
+table.app-list > tbody:not(:last-child) {
     border-bottom: 1px solid var(--sync-gray200);
 }
 
-table.found-cookies > tbody > tr > td.cookie-value {
+table.app-list > tbody > tr > td.cookie-value {
     position: relative;
     max-width: 300px;
 }
 
-table.found-cookies > tbody > tr > td.cookie-value .cookie-value-content {
+table.app-list > tbody > tr > td.cookie-value .cookie-value-content {
     display: -webkit-box;
     -webkit-line-clamp: 3;
     -webkit-box-orient: vertical;
     overflow: hidden;
     text-overflow: ellipsis;
+}
+
+table.app-list input {
+    min-width: 500px;
+    width: 100%;
+    padding: 0.5rem;
+    border: 1px solid var(--sync-gray200);
+    border-radius: 4px;
 }
