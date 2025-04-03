@@ -5,12 +5,6 @@ import { useApplicationListData } from "../hooks/useApplicationListData";
 import { ResetConfigBtn } from "./ResetConfigBtn";
 import { UpdateConfigBtn } from "./UpdateConfigBtn";
 
-/**
- * ApplicationList component
- * @constructor
- * Show the list of applications
- * @return {JSX.Element} ApplicationList component
- */
 export function ApplicationList() {
   const { data } = useApplicationListData();
   const { config, dispatch } = useConfigContext();
@@ -21,7 +15,7 @@ export function ApplicationList() {
       type: "OVERRIDE_CONFIG",
       value: data,
     });
-  }, []);
+  }, [data,dispatch]);
 
   const handleInputChange = (key: string, value: string) => {
     dispatch({
@@ -41,20 +35,20 @@ export function ApplicationList() {
         <UpdateConfigBtn />
         <ResetConfigBtn />
       </div>
-
       <table className="app-list">
         <thead>
         <tr>
-          <th>App</th>
+          <th>Application</th>
           <th>URL</th>
         </tr>
         </thead>
         <tbody>
         {Object.entries(config).map(([key, value]) => (
           <tr key={key}>
-            <td><strong>{key}</strong></td>
+            <td className="tbl-key"><strong>{key}</strong></td>
             <td>
               <input
+                className="input"
                 type="text"
                 value={value}
                 onChange={(event) => handleInputChange(key, event.currentTarget.value)}

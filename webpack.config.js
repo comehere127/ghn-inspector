@@ -24,8 +24,7 @@ const extensionReloaderPlugin =
       reloadPage: true,
       entries: {
         // TODO: reload manifest on update
-        extensionPage: ["popup", "options", "devtools"],
-        background: "background",
+        extensionPage: ["devtools"],
       },
     })
     : () => {
@@ -55,9 +54,6 @@ module.exports = {
 
   entry: {
     manifest: path.join(sourcePath, "manifest.json"),
-    serviceworker: path.join(sourcePath, "Background", "service-worker.ts"),
-    popup: path.join(sourcePath, "Popup", "index.tsx"),
-    options: path.join(sourcePath, "Options", "index.tsx"),
     devtools: path.join(sourcePath, "Devtools", "index.tsx"),
     panel: path.join(sourcePath, "Devtools", "panel.tsx"),
   },
@@ -131,18 +127,6 @@ module.exports = {
     }),
     // write css file(s) to build folder
     new MiniCssExtractPlugin({ filename: "css/[name].css" }),
-    new HtmlWebpackPlugin({
-      template: path.join(viewsPath, "popup.html"),
-      chunks: ["popup"],
-      hash: true,
-      filename: "popup.html",
-    }),
-    new HtmlWebpackPlugin({
-      template: path.join(viewsPath, "options.html"),
-      chunks: ["options"],
-      hash: true,
-      filename: "options.html",
-    }),
     new HtmlWebpackPlugin({
       template: path.join(viewsPath, "devtools.html"),
       chunks: ["devtools"],

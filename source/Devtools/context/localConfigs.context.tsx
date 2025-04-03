@@ -1,15 +1,16 @@
-import React, { createContext, useReducer, ReactNode, useContext } from "react";
+import React, { createContext, useReducer, ReactNode, useContext, useState } from "react";
 
 type ConfigState = Record<string, string>;
 
 type ConfigAction =
   | { type: "OVERRIDE_CONFIG"; value: ConfigState }
-  | { type: "SET_CONFIG"; key: string; value: string }
-  | { type: "REMOVE_CONFIG"; key: string };
+  | { type: "SET_CONFIG"; key: string; value: string };
 
 const ConfigContext = createContext<{
   config: ConfigState;
   dispatch: React.Dispatch<ConfigAction>;
+  message:string;
+  setNotify: React.Dispatch<React.SetStateAction<string>>;
 } | undefined>(undefined);
 
 const configReducer = (state: ConfigState, action: ConfigAction): ConfigState => {
@@ -19,11 +20,6 @@ const configReducer = (state: ConfigState, action: ConfigAction): ConfigState =>
 
     case "SET_CONFIG":
       return { ...state, [action.key]: action.value };
-
-    case "REMOVE_CONFIG":
-      // eslint-disable-next-line no-unused-vars,no-case-declarations
-      const { [action.key]: _removedKey, ...rest } = state;
-      return rest;
 
     default:
       return state;
@@ -36,9 +32,12 @@ interface ConfigProviderProps {
 
 export function ConfigContextProvider({ children }: ConfigProviderProps) {
   const [config, dispatch] = useReducer(configReducer, {});
+  const [message, setNotify] = useState<string>("")
 
   return (
-    <ConfigContext.Provider value={{ config, dispatch }}>
+    <ConfigContext.Provider value={{ config, dispatch,
+      message, setNotify
+     }}>
       {children}
     </ConfigContext.Provider>
   );

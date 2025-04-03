@@ -1,11 +1,11 @@
 {
-  "name": "ghn-cookie-sync",
-  "version": "1.0.7",
-  "description": "Sync cookies for local frontend development of GHN",
+  "name": "ghn-inspector",
+  "version": "1.0.0",
+  "description": "MFE Inspector for local frontend development of GHN SingleWeb",
   "private": true,
-  "repository": "https://github.com/comehere127/ghn-sync-cookie.git",
+  "repository": "https://github.com/comehere127/ghn-inspector.git",
   "author": {
-    "name": "TuDHM",
+    "name": "Kent Duong",
     "email": "duonghominhtu1207@gmail.com"
   },
   "sideEffects": [
@@ -100,5 +100,6 @@
     "webpack-extension-reloader": "^1.1.4",
     "wext-manifest-loader": "^2.3.0",
     "wext-manifest-webpack-plugin": "^1.2.1"
-  }
+  },
+  "packageManager": "yarn@1.22.22+sha512.a6b2f7906b721bba3d67d4aff083df04dad64c399707841b7acf00f6b133b7ac24255f2652fa22ae3534329dc6180534e98d17432037ff6fd140556e2bb3137e"
 }

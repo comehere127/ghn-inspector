@@ -1,8 +1,9 @@
 import browser from "webextension-polyfill";
 
+
 browser.devtools.panels.create(
   "GHN inspector", // Panel name
-  "", // Optional icon
+  "assets/icons/favicon-32.png", // Optional icon
   "panel.html", // HTML file to show in the panel
 ).then(res => {
   console.log({ res });

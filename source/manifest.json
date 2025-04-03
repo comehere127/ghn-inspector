@@ -9,18 +9,16 @@
     "180": "assets/icons/favicon-180.png",
     "192": "assets/icons/favicon-192.png"
   },
-  "description": "Sync cookies for local frontend development of GHN SingleWeb",
-  "homepage_url": "https://github.com/comehere127/ghn-sync-cookie",
-  "short_name": "Cookie Sync",
+  "description": "MFE Inspector for local frontend development of GHN SingleWeb",
+  "homepage_url": "https://github.com/comehere127/ghn-inspector",
+  "short_name": "MFE Inspector",
   "__chrome|edge|opera__permissions": [
-    "cookies",
     "storage",
     "tabs",
     "activeTab",
     "scripting"
   ],
   "__firefox__permissions": [
-    "cookies",
     "storage",
     "tabs",
     "activeTab",
@@ -44,20 +42,5 @@
   },
   "__chrome__minimum_chrome_version": "88",
   "__opera__minimum_opera_version": "36",
-  "__firefox__browser_action": {
-    "default_popup": "popup.html",
-    "default_title": "GHN Inspector",
-    "browser_style": false
-  },
-  "__chrome|edge|opera__action": {
-    "default_popup": "popup.html",
-    "default_title": "GHN Inspector"
-  },
-  "background": {
-    "__firefox__scripts": [
-      "js/serviceworker.bundle.js"
-    ],
-    "__chrome|edge|opera__service_worker": "js/serviceworker.bundle.js"
-  },
   "devtools_page": "devtools.html"
 }
