@@ -1,4 +1,4 @@
-[![Node.js CI](https://github.com/comehere127/ghn-sync-cookie/actions/workflows/build.yml/badge.svg)](https://github.com/comehere127/ghn-sync-cookie/actions/workflows/build.yml)
+[![Node.js CI](https://github.com/comehere127/ghn-inspector/actions/workflows/build.yml/badge.svg)](https://github.com/comehere127/ghn-inspector/actions/workflows/build.yml)
 
 # GHN Inspector
 
@@ -10,14 +10,14 @@ A Firefox/Chrome devtools extension to provide utilities for helping with Portal
 
 You can install the latest version of the Cookie Sync extension using the links below:
 
-- [Get GHN Inspector for Chrome](https://chromewebstore.google.com/detail/ghn-cookie-sync/hbfjhefhdggcgehngdldljifmdkpiign)
-- [Get GHN Inspector for Firefox](https://addons.mozilla.org/en-US/firefox/addon/ghn-cookie-sync/)
+- [Get GHN Inspector for Chrome](https://chromewebstore.google.com/detail/ghn-inspector/hbfjhefhdggcgehngdldljifmdkpiign)
+- [Get GHN Inspector for Firefox](https://addons.mozilla.org/en-US/firefox/addon/ghn-inspector/)
 
 This is the recommended installation method.
 
 ## 🔧 Manual Installation
 
-You can download the bundled extension for your browser from the github releases page [here](https://github.com/comehere127/ghn-sync-cookie/releases).
+You can download the bundled extension for your browser from the github releases page [here](https://github.com/comehere127/ghn-inspector/releases).
 
 _NOTE: Auto-update will not work with manual installations._
 
@@ -40,22 +40,9 @@ _NOTE: Auto-update will not work with manual installations._
     3. Visit [`about:addons`](about:addons)
     4. Drag & drop the `firefox.xpi` file you downloaded into the page.
 
-- ### Safari
-
-    The full extension is not avaialble on Safari. Instead you can manually read
-    cookies from the extension inside Firefox or a Chrome based browser then
-    write those cookies into Safari.s
-
-    _Using a browser with this extension installed:_
-    1. login to production and also the domain you want to use within Safari.
-         - for example, login to [Portal Test](https://test-portal.ghn.tech) or [Portal Staging](https://stg-portal.ghn.tech)  to get refreshed cookies
-    2. Open the extension and click "Sync Cookies Now".
-    3. Click the "Copy" button next to the domain you want to use within Safari.
-    4. Paste the copied `document.cookie=...` snippet into the Safari JavaScript Console.
-
 ## 🐛 Bugs
 
-Please file an issue [here](https://github.com/comehere127/ghn-sync-cookie/issues) for feature requests, bugs, missing documentation, or unexpected behavior.
+Please file an issue [here](https://github.com/comehere127/ghn-inspector/issues) for feature requests, bugs, missing documentation, or unexpected behavior.
 
 ## 🖥️ Developing
 
@@ -86,13 +73,13 @@ Then run the following:
     - Go to the browser address bar and type `chrome://extensions`.
     - Check the `Developer Mode` button to enable it.
     - Click on the `Load Unpacked Extension…` button.
-    - Select the folder `cookie-sync/extension/chrome`.
+    - Select the folder `inspector/extension/chrome`.
 
    #### Firefox [ESR](https://www.mozilla.org/en-US/firefox/enterprise/), [Developer](https://www.mozilla.org/en-US/firefox/developer/), or [Nightly build](https://www.mozilla.org/en-US/firefox/channel/desktop/#nightly)
 
     - Go to the browser address bar and type `about:debugging#/runtime/this-firefox`.
     - Click on the `Temporary Extensions` Section, then the `Load Unpacked Extension…` button.
-    - Select the file `cookie-sync/extension/firefox.xpi`.
+    - Select the file `inspector/extension/firefox.xpi`.
 
 ### Test Prod builds
 
@@ -141,4 +128,4 @@ See the original [README](https://github.com/abhijithvijayan/wext-manifest-loade
 
 ## License
 
-[MIT ©](https://github.com/comehere127/ghn-sync-cookie/blob/master/LICENCE)
+[MIT ©](https://github.com/comehere127/ghn-inspector/blob/master/LICENCE)
