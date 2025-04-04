@@ -10,7 +10,7 @@ A Firefox/Chrome devtools extension to provide utilities for helping with Portal
 
 You can install the latest version of the Inspector devtools using the links below:
 
-- [Get GHN Inspector for Chrome](https://chromewebstore.google.com/detail/ghn-inspector/hbfjhefhdggcgehngdldljifmdkpiign)
+- [Get GHN Inspector for Chrome](https://chromewebstore.google.com/detail/ghn-inspector/fmaihfhpimhkddgcnlidolgplhcdfhod)
 - [Get GHN Inspector for Firefox](https://addons.mozilla.org/en-US/firefox/addon/ghn-inspector/)
 
 This is the recommended installation method.
