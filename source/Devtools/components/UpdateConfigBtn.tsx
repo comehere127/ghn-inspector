@@ -1,7 +1,6 @@
 // eslint-disable-next-line @typescript-eslint/no-unused-vars, no-unused-vars
 import React from "react";
 
-import { LOCAL_MODULES_KEY } from "../constant";
 import { useConfigContext } from "../context/localConfigs.context";
 import { useLocalStorageContext } from "../context/localStorage.context";
 
@@ -10,7 +9,7 @@ export function UpdateConfigBtn() {
   const { saveAppListToPortal } = useLocalStorageContext();
 
   const handleOnClick = () => {
-    saveAppListToPortal(LOCAL_MODULES_KEY, config);
+    saveAppListToPortal(config);
     setNotify("Update config successful!")
   };
 

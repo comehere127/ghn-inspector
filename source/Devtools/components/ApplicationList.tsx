@@ -1,21 +1,24 @@
-import React, { useEffect } from "react";
+import React from "react";
 
+import browser from 'webextension-polyfill';
+
+import { empty } from "../../utils/empty";
+import { DEVTOOLS_LOCAL_MODULES_KEY } from "../constant";
 import { useConfigContext } from "../context/localConfigs.context";
+import { useLocalStorageContext } from "../context/localStorage.context";
 import { useApplicationListData } from "../hooks/useApplicationListData";
-import { ResetConfigBtn } from "./ResetConfigBtn";
-import { UpdateConfigBtn } from "./UpdateConfigBtn";
-
 export function ApplicationList() {
   const { data } = useApplicationListData();
-  const { config, dispatch } = useConfigContext();
+  const { config, dispatch, setNotify } = useConfigContext();
+    const { saveAppListToPortal, setExtensionStorage, refreshAppList} = useLocalStorageContext();
 
-  useEffect(() => {
+  React.useEffect(() => {
     if (!data) return;
     dispatch({
       type: "OVERRIDE_CONFIG",
       value: data,
     });
-  }, [data,dispatch]);
+  }, [data, dispatch]);
 
   const handleInputChange = (key: string, value: string) => {
     dispatch({
@@ -25,15 +28,29 @@ export function ApplicationList() {
     });
   };
 
-  if (!data) {
-    return <h2>No data</h2>;
+  const onReset = React.useCallback(async () => {
+    const stored= await browser.storage.local.get()||{}
+    saveAppListToPortal(stored[DEVTOOLS_LOCAL_MODULES_KEY])
+    setExtensionStorage(stored[DEVTOOLS_LOCAL_MODULES_KEY])
+    setNotify("Restore config successful!")
+  }, [saveAppListToPortal, setExtensionStorage, setNotify])
+  
+  const onUpdate = React.useCallback(() => {
+    saveAppListToPortal(config);
+    setNotify("Update config successful!")
+  }, [config, saveAppListToPortal, setNotify]);
+
+  if (empty(data)) {
+    // eslint-disable-next-line jsx-a11y/anchor-is-valid
+    return <h2>No data. <a onClick={refreshAppList} href="javascript:void(0)">Click here to get applications</a></h2>;
   }
 
   return (
     <React.Fragment>
       <div className="mb-4 devtools-btn-group">
-        <UpdateConfigBtn />
-        <ResetConfigBtn />
+         <button className="btn" onClick={onUpdate}>Update</button>
+        <button className="btn" onClick={onReset}>Reset</button>
+        {empty(config) && <button className="btn outline" onClick={refreshAppList}>Refresh</button>}
       </div>
       <table className="app-list">
         <thead>

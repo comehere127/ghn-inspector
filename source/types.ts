@@ -1,16 +1,17 @@
-import type {Cookies} from 'webextension-polyfill';
 
 export type Message = {
-  command: 'sync-now' | 'storage-clear';
+  command: MessageCommand;
+  tabId: number;
+  data?: string;
 };
 
-// eslint-disable-next-line no-undef
-export type SyncNowResponse = PromiseSettledResult<
-  | {
-      origin: string;
-      cookie: Cookies.Cookie;
-    }
-  | undefined
->[];
-
 export type StorageClearResponse = boolean;
+
+
+export const enum MessageCommand {
+  GET_TAB_INFO = 'get-tab-info',
+  GET_LOCAL_DEVELOPMENT = "get-local-development",
+  GET_PORTAL_MODULE = "get-portal-module",
+  SET_PORTAL_MODULE = "set-portal-module",
+  ON_RELOAD = "on-reload"
+}

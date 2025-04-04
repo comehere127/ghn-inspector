@@ -31,6 +31,10 @@ h1 {
     font-weight: 600;
 }
 
+h2>a{
+    color: var(--inspector-primary);
+}
+
 i {
     font-size: .75rem;
     line-height: 0.75rem;
@@ -97,6 +101,10 @@ i {
     padding: 0.5rem;
     cursor: pointer;
     transition: box-shadow 0.3s ease;
+}
+.btn.outline{
+    color: var(--inspector-primary);
+    background-color: transparent;
 }
 .input{
     background-color: var(--inspector-surface100);

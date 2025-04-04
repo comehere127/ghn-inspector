@@ -3,7 +3,7 @@ import React from "react";
 
 import browser from "webextension-polyfill";
 
-import { DEVTOOLS_LOCAL_MODULES_KEY,LOCAL_MODULES_KEY } from "../constant";
+import { DEVTOOLS_LOCAL_MODULES_KEY } from "../constant";
 import { useConfigContext } from "../context/localConfigs.context";
 import { useLocalStorageContext } from "../context/localStorage.context";
 
@@ -12,8 +12,8 @@ export function ResetConfigBtn() {
   const {setNotify} = useConfigContext()
 
   const handleOnClick = async () => {
-    const stored=await browser.storage.local.get()||{}
-    saveAppListToPortal(LOCAL_MODULES_KEY, stored[DEVTOOLS_LOCAL_MODULES_KEY])
+    const stored= await browser.storage.local.get()||{}
+    saveAppListToPortal(stored[DEVTOOLS_LOCAL_MODULES_KEY])
     setExtensionStorage(stored[DEVTOOLS_LOCAL_MODULES_KEY])
     setNotify("Restore config successful!")
   };

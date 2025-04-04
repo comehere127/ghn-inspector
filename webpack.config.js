@@ -25,12 +25,12 @@ const extensionReloaderPlugin =
       entries: {
         // TODO: reload manifest on update
         extensionPage: ["devtools"],
+        background: 'background',
       },
     })
     : () => {
-      this.apply = () => {
+        this.apply = () => {};
       };
-    };
 
 const getExtensionFileType = (browser) => {
   if (browser === "firefox") {
@@ -54,6 +54,7 @@ module.exports = {
 
   entry: {
     manifest: path.join(sourcePath, "manifest.json"),
+    serviceworker: path.join(sourcePath, 'Background', 'service-worker.ts'),
     devtools: path.join(sourcePath, "Devtools", "index.tsx"),
     panel: path.join(sourcePath, "Devtools", "panel.tsx"),
   },
