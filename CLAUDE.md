@@ -4,7 +4,9 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## What this is
 
-A WebExtension (Chrome / Firefox / Edge / Opera) that adds a **GHN Inspector** devtools panel for managing the GHN SingleWeb Portal's MFE (Module Federation) module map at runtime. It reads/writes `localStorage` keys (`ghn_mfe_development`, `ghn_mfe_local_modules`) on the inspected tab so developers can point individual mini-apps at local/remote `mf-manifest.json` URLs without rebuilding the portal.
+A WebExtension (Chrome / Firefox / Edge / Opera) that adds a **GHN Inspector** devtools panel for managing the GHN SingleWeb Portal's MFE (Module Federation) module map at runtime. The panel drives the portal via a `window.__ghnInspector` facade injected by the host page — toggling local-development mode, getting/setting the alias→`mf-manifest.json` map, and triggering a reload — so developers can point individual mini-apps at local/remote manifests without rebuilding the portal.
+
+The facade is invoked from the service worker via `browser.scripting.executeScript` running in the **MAIN world** (the default ISOLATED world cannot see `window.__ghnInspector`). The shape of that facade is mirrored in `PortalInspectorAPI` (`source/types.ts`) and is **hand-synced** with the portal — if the portal changes its API surface, update both the interface and the injected functions in `service-worker.ts` together.
 
 ## Common commands
 
@@ -28,7 +30,7 @@ There is no test runner configured. Note both `biome.json` and `.eslintrc.json` 
 Three runtime contexts, wired by `webpack.config.js` as four entries (`manifest`, `serviceworker`, `devtools`, `panel`):
 
 1. **Service worker** — `source/Background/service-worker.ts`
-   The only context with `scripting` + `tabs` permissions. Listens on `browser.runtime.onMessage` and dispatches on the `MessageCommand` enum (`source/types.ts`): `GET_TAB_INFO`, `GET_LOCAL_DEVELOPMENT`, `GET_PORTAL_MODULE`, `SET_PORTAL_MODULE`, `ON_RELOAD`. All `localStorage` reads/writes against the inspected page happen here via `browser.scripting.executeScript` — the panel never touches the target page directly.
+   The only context with `scripting` + `tabs` permissions. Listens on `browser.runtime.onMessage` and dispatches on the `MessageCommand` enum (`source/types.ts`): `GET_TAB_INFO`, `GET_LOCAL_DEVELOPMENT`, `SET_LOCAL_DEVELOPMENT`, `GET_PORTAL_MODULE`, `SET_PORTAL_MODULE`, `ON_RELOAD`. Every case (except `GET_TAB_INFO`, which uses `browser.tabs.get`) flows through a shared `execInPage(tabId, func, args)` helper that runs the supplied function in the inspected page's MAIN world and returns its result. The panel never touches the target page directly.
 
 2. **Devtools page** — `source/Devtools/index.tsx` (loaded by `views/devtools.html`)
    Tiny bootstrap that calls `browser.devtools.panels.create(...)` to register the "GHN inspector" panel pointing at `panel.html`.
@@ -48,7 +50,7 @@ Custom hooks live in `source/Devtools/hooks/` (`useApplicationListData`, `useGlo
 
 ### Manifest generation
 
-`source/manifest.json` is processed by `wext-manifest-loader`. Keys prefixed `__chrome|edge|opera__` or `__firefox__` are selected based on `TARGET_BROWSER`. Manifest V3 is emitted for Chromium browsers (service worker background), V2 for Firefox (background scripts array). Host permissions are scoped to `https://*.ghn.tech/*` and `http://localhost/*`. The version field is overwritten from `package.json` at build time (`usePackageJSONVersion: true`).
+`source/manifest.json` is processed by `wext-manifest-loader`. Keys prefixed `__chrome|edge|opera__` or `__firefox__` are selected based on `TARGET_BROWSER`. Manifest V3 is emitted for Chromium browsers (service worker background), V2 for Firefox (background scripts array). Host permissions cover `https://*.ghn.tech/*`, `https://*.ghn.vn/*`, and `http://localhost/*` (Firefox lists the hosts inside `permissions`; Chromium splits them into `host_permissions`). The version field is overwritten from `package.json` at build time (`usePackageJSONVersion: true`).
 
 ### Styling
 

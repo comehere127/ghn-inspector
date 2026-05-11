@@ -1,88 +1,123 @@
-import browser from 'webextension-polyfill';
+import browser from "webextension-polyfill";
 
-import { MessageCommand, type Message, } from '../types';
+import { MessageCommand, type Message } from "../types";
 
-/**
- * When we get a message from the browser, read out the command, exec it and return the result
- */
+async function execInPage<T>(
+  tabId: number,
+  func: (...args: unknown[]) => T,
+  args: unknown[] = [],
+): Promise<T | null> {
+  try {
+    const result = await browser.scripting.executeScript({
+      target: { tabId },
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      func: func as any,
+      args,
+      // Must run in MAIN world to read page-set globals like window.__ghnInspector.
+      // The default ISOLATED world has its own `window` and cannot see them.
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      world: "MAIN" as any,
+    });
+    return (result[0]?.result as T) ?? null;
+  } catch (error) {
+    console.error("execInPage failed:", error);
+    return null;
+  }
+}
+
 async function onMessage(message: Message) {
-  switch(message.command) {
+  switch (message.command) {
     case MessageCommand.GET_TAB_INFO:
       if (message.tabId) {
-        return browser.tabs.get(message.tabId)
-          .then(tab => tab)
-          .catch(error => {
+        return browser.tabs
+          .get(message.tabId)
+          .then((tab) => tab)
+          .catch((error) => {
             console.error("Error getting tab:", error);
             return null;
           });
       }
       break;
+
     case MessageCommand.GET_LOCAL_DEVELOPMENT:
       if (message.tabId) {
-        const result = await browser.scripting.executeScript({
-          target: { tabId: message.tabId },
-          func: () => {
-            const isDevStored = localStorage.getItem("ghn_mfe_development") || ""
-            return isDevStored === "true"
-          },
+        return await execInPage<boolean | null>(message.tabId, () => {
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          const api = (window as any).__ghnInspector;
+          return api ? api.isDevelopmentEnabled() : null;
         });
-        if (result[0]) {
-          return result[0].result;
-        }
-        return false
       }
       break;
+
+    case MessageCommand.SET_LOCAL_DEVELOPMENT:
+      if (message.tabId) {
+        await execInPage<void>(
+          message.tabId,
+          (enabled) => {
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            const api = (window as any).__ghnInspector;
+            if (!api) return;
+            if (enabled) api.enableDevelopment();
+            else api.disableDevelopment();
+          },
+          [Boolean(message.data)],
+        );
+      }
+      break;
+
     case MessageCommand.GET_PORTAL_MODULE:
       if (message.tabId) {
-        const result = await browser.scripting.executeScript({
-          target: { tabId: message.tabId },
-          func: () => {
-            let data: Record<string, string> = {};
-            const modules = localStorage.getItem("ghn_mfe_local_modules") || ""
-            try{
-              data= JSON.parse(modules) as Record<string,string>
-            } catch(error){
-              console.error(error)
-            }
-            return data;
+        return await execInPage<Record<string, string> | null>(
+          message.tabId,
+          () => {
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            const api = (window as any).__ghnInspector;
+            return api ? api.getLocalModules() : null;
           },
-        });
-        if (result[0]) {
-          return result[0].result
-        }
-        return {}
+        );
       }
       break;
+
     case MessageCommand.SET_PORTAL_MODULE:
       if (message.tabId) {
-        await browser.scripting.executeScript({
-          target: { tabId: message.tabId },
-          func: (data) => localStorage.setItem("ghn_mfe_local_modules", data as string),
-          args: [message.data],
-        });
+        await execInPage<void>(
+          message.tabId,
+          (raw) => {
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            const api = (window as any).__ghnInspector;
+            if (!api) return;
+            try {
+              const modules = JSON.parse(raw as string) as Record<
+                string,
+                string
+              >;
+              api.setLocalModules(modules);
+            } catch (e) {
+              console.error("SET_PORTAL_MODULE parse failed", e);
+            }
+          },
+          [message.data],
+        );
       }
       break;
+
     case MessageCommand.ON_RELOAD:
       if (message.tabId) {
-        browser.scripting.executeScript({
-          target: { tabId: message.tabId },
-          func: () => {
-            window.location.reload();
-          },
+        await execInPage<void>(message.tabId, () => {
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          const api = (window as any).__ghnInspector;
+          if (api) api.reload();
+          else window.location.reload();
         });
       }
       break;
   }
-
   return null;
 }
 
-/**
- * Service-worker entrypoint.
- */
 (async function init() {
   console.clear();
-  console.info('Inspector Service Worker is starting...');
+  console.info("Inspector Service Worker is starting...");
   browser.runtime.onMessage.addListener(onMessage);
 })();
 

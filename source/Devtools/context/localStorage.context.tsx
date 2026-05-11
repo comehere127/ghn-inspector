@@ -11,7 +11,11 @@ import browser from "webextension-polyfill";
 
 import { MessageCommand, type Message } from "../../types";
 import { empty } from "../../utils/empty";
-import { DEVTOOLS_LOCAL_MODULES_KEY } from "../constant";
+import {
+	EXTENSION_API_DEFAULTS_KEY,
+	EXTENSION_OVERRIDES_KEY,
+	getHostnameFromUrl,
+} from "../constant";
 
 interface LocalStorageContextProps {
 	extensionStorage: Record<string, string>;
@@ -24,6 +28,7 @@ interface LocalStorageContextProps {
 		React.SetStateAction<browser.Tabs.Tab | undefined>
 	>;
 
+	apiAvailable: boolean | null;
 	saveAppListToPortal: (value: unknown) => void;
 	getAppListFromPortal: (data: string) => void;
 	refreshAppList: () => void;
@@ -38,23 +43,69 @@ export function LocalStorageProvider({ children }: { children: ReactNode }) {
 	const [extensionStorage, setExtensionStorage] = useState<
 		Record<string, string>
 	>({});
+	const [apiAvailable, setApiAvailable] = useState<boolean | null>(null);
 	const getAppListFromLocalStorage = useCallback(async () => {
 		if (!activeTab || !activeTab.id) return;
-		const result = await browser.runtime.sendMessage({
+		const hostname = getHostnameFromUrl(activeTab.url);
+
+		// Probe the page first so we can set apiAvailable correctly.
+		const pageResult = await browser.runtime.sendMessage({
 			command: MessageCommand.GET_PORTAL_MODULE,
 			tabId: activeTab.id,
 		} as Message);
-		setExtensionStorage(result);
+
+		if (pageResult === null) {
+			setApiAvailable(false);
+			setExtensionStorage({});
+			return;
+		}
+		setApiAvailable(true);
+
+		// Try to restore from hostname-keyed extension memory.
+		if (hostname) {
+			const stored = (await browser.storage.local.get(EXTENSION_OVERRIDES_KEY)) || {};
+			const allOverrides =
+				(stored[EXTENSION_OVERRIDES_KEY] as Record<string, Record<string, string>>) ||
+				{};
+			const hostSlice = allOverrides[hostname];
+			if (hostSlice && !empty(hostSlice)) {
+				// Push memorized config back into the page's localStorage so useLoadModule sees it.
+				await browser.runtime.sendMessage({
+					command: MessageCommand.SET_PORTAL_MODULE,
+					tabId: activeTab.id,
+					data: JSON.stringify(hostSlice),
+				} as Message);
+				setExtensionStorage(hostSlice);
+				return;
+			}
+		}
+
+		// No memorized config for this hostname — fall back to whatever the page already has.
+		setExtensionStorage(pageResult);
 	}, [activeTab]);
 
 	const saveAppListToPortal = useCallback(
 		async (value: unknown) => {
 			if (!activeTab || !activeTab.id) return;
+			const hostname = getHostnameFromUrl(activeTab.url);
+
+			// Write through to the page.
 			await browser.runtime.sendMessage({
 				command: MessageCommand.SET_PORTAL_MODULE,
 				tabId: activeTab.id,
 				data: JSON.stringify(value),
 			} as Message);
+
+			// Persist in extension memory under the hostname.
+			if (hostname) {
+				const stored = (await browser.storage.local.get(EXTENSION_OVERRIDES_KEY)) || {};
+				const allOverrides =
+					(stored[EXTENSION_OVERRIDES_KEY] as Record<string, unknown>) || {};
+				allOverrides[hostname] = value;
+				await browser.storage.local.set({
+					[EXTENSION_OVERRIDES_KEY]: allOverrides,
+				});
+			}
 		},
 		[activeTab],
 	);
@@ -62,6 +113,7 @@ export function LocalStorageProvider({ children }: { children: ReactNode }) {
 	const getAppListFromPortal = useCallback(
 		async (data: string) => {
 			if (!activeTab || !activeTab.id) return;
+			const hostname = getHostnameFromUrl(activeTab.url);
 			const result: Record<string, string> = {};
 
 			try {
@@ -75,8 +127,20 @@ export function LocalStorageProvider({ children }: { children: ReactNode }) {
 			} catch (error) {
 				console.error(error);
 			}
-			await browser.storage.local.set({ [DEVTOOLS_LOCAL_MODULES_KEY]: result });
 
+			// Save API defaults keyed by hostname.
+			if (hostname) {
+				const stored =
+					(await browser.storage.local.get(EXTENSION_API_DEFAULTS_KEY)) || {};
+				const allDefaults =
+					(stored[EXTENSION_API_DEFAULTS_KEY] as Record<string, unknown>) || {};
+				allDefaults[hostname] = result;
+				await browser.storage.local.set({
+					[EXTENSION_API_DEFAULTS_KEY]: allDefaults,
+				});
+			}
+
+			// Seed the page only if the user hasn't already set anything.
 			if (empty(extensionStorage)) {
 				await saveAppListToPortal(result);
 				await getAppListFromLocalStorage();
@@ -110,6 +174,7 @@ export function LocalStorageProvider({ children }: { children: ReactNode }) {
 				setExtensionStorage,
 				activeTab,
 				setActiveTab,
+				apiAvailable,
 				saveAppListToPortal,
 				refreshAppList,
 			}}
