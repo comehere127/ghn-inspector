@@ -4,7 +4,6 @@ import browser from "webextension-polyfill";
 
 import { Message, MessageCommand } from '../../types';
 import { useLocalStorageContext } from "../context/localStorage.context";
-import { useGlobal } from "../hooks/useGlobal";
 import { ApplicationList } from "./ApplicationList";
 import { Notify } from "./Notify";
 import VersionBadge from "./VersionBadge";
@@ -20,8 +19,7 @@ import VersionBadge from "./VersionBadge";
 
   
 export function DevTools() {
-  const { setActiveTab , getAppListFromPortal, activeTab, refreshAppList} = useLocalStorageContext();
-  const { isDev } = useGlobal(activeTab);
+  const { setActiveTab , getAppListFromPortal,  refreshAppList} = useLocalStorageContext();
   const [currentPath, setCurrentPath] = React.useState("");
   const onCapturedRequest = React.useCallback(async (resp)=>{
     const { request, response } = resp || {}
@@ -73,7 +71,7 @@ export function DevTools() {
     };
   }, [setActiveTab]);
 
-  if (!currentPath || !isDev) {
+  if (!currentPath ) {
     return <div>
       <h1>This extension only worked in development environment</h1>
       {currentPath && <button className="btn" onClick={refreshAppList}>Refresh</button>}
