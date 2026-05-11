@@ -3,14 +3,17 @@ import React from "react";
 import browser from 'webextension-polyfill';
 
 import { empty } from "../../utils/empty";
-import { DEVTOOLS_LOCAL_MODULES_KEY } from "../constant";
+import {
+  EXTENSION_API_DEFAULTS_KEY,
+  getHostnameFromUrl,
+} from "../constant";
 import { useConfigContext } from "../context/localConfigs.context";
 import { useLocalStorageContext } from "../context/localStorage.context";
 import { useApplicationListData } from "../hooks/useApplicationListData";
 export function ApplicationList() {
   const { data } = useApplicationListData();
   const { config, dispatch, setNotify } = useConfigContext();
-    const { saveAppListToPortal, setExtensionStorage, refreshAppList} = useLocalStorageContext();
+    const { saveAppListToPortal, setExtensionStorage, refreshAppList, activeTab } = useLocalStorageContext();
 
   React.useEffect(() => {
     if (!data) return;
@@ -29,11 +32,17 @@ export function ApplicationList() {
   };
 
   const onReset = React.useCallback(async () => {
-    const stored= await browser.storage.local.get()||{}
-    saveAppListToPortal(stored[DEVTOOLS_LOCAL_MODULES_KEY])
-    setExtensionStorage(stored[DEVTOOLS_LOCAL_MODULES_KEY])
-    setNotify("Restore config successful!")
-  }, [saveAppListToPortal, setExtensionStorage, setNotify])
+    const hostname = getHostnameFromUrl(activeTab?.url);
+    if (!hostname) return;
+    const stored = (await browser.storage.local.get(EXTENSION_API_DEFAULTS_KEY)) || {};
+    const allDefaults =
+      (stored[EXTENSION_API_DEFAULTS_KEY] as Record<string, Record<string, string>>) ||
+      {};
+    const hostDefaults = allDefaults[hostname] || {};
+    await saveAppListToPortal(hostDefaults);     // writes both page + extension memory
+    setExtensionStorage(hostDefaults);
+    setNotify("Restore config successful!");
+  }, [activeTab, saveAppListToPortal, setExtensionStorage, setNotify])
   
   const onUpdate = React.useCallback(() => {
     saveAppListToPortal(config);
